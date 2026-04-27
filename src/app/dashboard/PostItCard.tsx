@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PostIt } from '@/types/database'
 import { deletePostIt, markPostItAsRead } from './actions'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 const colors: Record<string, string> = {
   yellow: 'bg-yellow-100 text-stone-800 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-100/90 dark:border-yellow-700/50',
@@ -14,6 +15,7 @@ const colors: Record<string, string> = {
 
 export default function PostItCard({ postIt, currentUserId }: { postIt: PostIt, currentUserId: string }) {
   const [loading, setLoading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const isMine = postIt.creator_id === currentUserId
 
   async function handleDelete() {
@@ -43,17 +45,26 @@ export default function PostItCard({ postIt, currentUserId }: { postIt: PostIt, 
         <span>{isMine ? 'You' : 'Partner'}</span>
         <div className="flex items-center gap-3">
           {isMine ? (
-            <button onClick={handleDelete} disabled={loading} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 dark:hover:text-red-400 hover:underline">
+            <button onClick={() => setShowDeleteModal(true)} disabled={loading} className="opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-600 dark:hover:text-red-400 hover:underline">
               Delete
             </button>
           ) : (
-            <button onClick={handleMarkRead} disabled={loading} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-emerald-700 dark:hover:text-emerald-400 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 px-3 py-1.5 rounded-xl">
+            <button onClick={handleMarkRead} disabled={loading} className="opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-400 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 px-3 py-1.5 rounded-xl">
               Mark Read
             </button>
           )}
           <span>{new Date(postIt.created_at || '').toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Post-it?"
+        description="Are you sure you want to rip this note? It will disappear from both of your boards."
+        confirmText="Yes, delete it"
+      />
     </motion.div>
   )
 }

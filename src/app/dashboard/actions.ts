@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { feedPet } from './PetActions'
 
 export async function createPostIt(formData: FormData) {
   const supabase = createClient()
@@ -26,6 +27,9 @@ export async function createPostIt(formData: FormData) {
   if (error) {
     return { error: error.message }
   }
+
+  // Passive Trigger: Give pet some happiness on interaction
+  await feedPet()
 
   return { success: true }
 }
