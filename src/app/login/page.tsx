@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { login, signup } from '@/app/auth/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
+
+const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
@@ -13,9 +16,8 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     const formData = new FormData(e.currentTarget)
-    
+
     if (isLogin) {
       const { error } = await login(formData)
       if (error) setError(error)
@@ -23,81 +25,142 @@ export default function LoginPage() {
       const { error } = await signup(formData)
       if (error) setError(error)
     }
-
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#faf8f5] dark:bg-[#1a1525] transition-colors duration-300 selection:bg-rose-200">
-      <div className="p-4 flex justify-end">
+    <div
+      className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{ background: 'var(--bg-page)' }}
+    >
+      {/* Decorative blobs */}
+      <div className="blob blob-rose    w-96 h-96 -top-24 -left-24 animate-float" />
+      <div className="blob blob-lavender w-80 h-80 top-1/2  -right-20 animate-float" style={{ animationDelay: '1.5s' }} />
+      <div className="blob blob-mint    w-72 h-72 bottom-0  left-1/3  animate-float" style={{ animationDelay: '0.7s' }} />
+
+      {/* Header bar */}
+      <div className="relative z-10 p-4 flex justify-end">
         <ThemeToggle />
       </div>
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-800/80 p-8 sm:p-10 rounded-3xl shadow-xl shadow-rose-100/50 dark:shadow-lg dark:shadow-rose-900/20 border border-rose-50 dark:border-zinc-700/50 backdrop-blur-md">
-          <div className="text-center">
-            <h2 className="text-4xl font-extrabold text-stone-800 dark:text-stone-100 flex items-center justify-center gap-2">
-              AmoreSync <span className="text-rose-400">❤️</span>
-            </h2>
-            <p className="mt-3 text-sm text-stone-500 dark:text-stone-400 font-medium">
-              {isLogin ? 'Welcome back to your shared space' : 'Create a new space for you and your partner'}
-            </p>
-          </div>
-          
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="sr-only">Email address</label>
+
+      {/* Center content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 32, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ ...springConfig, delay: 0.1 }}
+          className="max-w-md w-full"
+        >
+          {/* Card */}
+          <div
+            className="bubbly-card p-8 sm:p-10 space-y-7"
+            style={{ background: 'linear-gradient(160deg, #ffffff 0%, #fdf4f8 100%)' }}
+          >
+            {/* Brand header */}
+            <div className="text-center space-y-3">
+              {/* Couple avatar pill */}
+              <div
+                className="w-20 h-20 rounded-[2rem] mx-auto flex items-center justify-center text-4xl"
+                style={{
+                  background: 'linear-gradient(135deg, #FFD1DC 0%, #E8D5F5 60%, #C8F0E0 100%)',
+                  boxShadow: '0 12px 32px rgba(255,182,193,0.45)',
+                }}
+              >
+                👩‍❤️‍👨
+              </div>
+              <h1
+                className="text-3xl font-bold tracking-tight"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                AmoreSync
+              </h1>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
+                {isLogin
+                  ? 'Welcome back, lovely 💕'
+                  : 'Create your shared space 🌸'}
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-3">
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none rounded-2xl relative block w-full px-4 py-3.5 border border-stone-200 dark:border-zinc-700 bg-[#faf8f5] dark:bg-zinc-900/50 placeholder-stone-400 dark:placeholder-zinc-500 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-500 focus:border-transparent sm:text-sm font-medium transition-all"
+                  className="input-bubbly"
                   placeholder="Email address"
                 />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">Password</label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="appearance-none rounded-2xl relative block w-full px-4 py-3.5 border border-stone-200 dark:border-zinc-700 bg-[#faf8f5] dark:bg-zinc-900/50 placeholder-stone-400 dark:placeholder-zinc-500 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-500 focus:border-transparent sm:text-sm font-medium transition-all"
+                  className="input-bubbly"
                   placeholder="Password"
                 />
               </div>
-            </div>
 
-            {error && (
-              <div className="text-rose-600 dark:text-rose-400 text-sm font-bold text-center bg-rose-50 dark:bg-rose-900/20 py-3 rounded-2xl border border-rose-100 dark:border-rose-900/30">
-                {error}
-              </div>
-            )}
+              {/* Error */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={springConfig}
+                  className="text-sm font-bold text-center py-3 px-4 rounded-2xl"
+                  style={{
+                    background: 'rgba(255,182,193,0.3)',
+                    color: '#9f1239',
+                    border: '1px solid rgba(244,63,94,0.2)',
+                  }}
+                >
+                  {error}
+                </motion.div>
+              )}
 
-            <div>
-              <button
+              {/* Submit */}
+              <motion.button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-extrabold rounded-2xl text-white bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50 transition-all shadow-lg shadow-rose-200/50 dark:shadow-rose-900/50"
+                whileTap={{ scale: 0.94 }}
+                whileHover={{ scale: 1.02 }}
+                transition={springConfig}
+                className="btn-bubbly-primary w-full py-4 text-base"
               >
-                {loading ? 'Processing...' : (isLogin ? 'Sign in' : 'Create Account')}
-              </button>
-            </div>
-          </form>
+                {loading
+                  ? '✨ Processing...'
+                  : isLogin
+                  ? 'Sign in 💕'
+                  : 'Create Account 🌸'}
+              </motion.button>
+            </form>
 
-          <div className="text-center mt-6">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm font-extrabold text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 transition-colors"
-            >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-            </button>
+            {/* Toggle login/signup */}
+            <div className="text-center">
+              <motion.button
+                type="button"
+                onClick={() => {
+                  setIsLogin(!isLogin)
+                  setError(null)
+                }}
+                whileTap={{ scale: 0.96 }}
+                transition={springConfig}
+                className="text-sm font-bold transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {isLogin
+                  ? "Don't have an account? "
+                  : 'Already have an account? '}
+                <span style={{ color: '#f43f5e' }}>
+                  {isLogin ? 'Sign up' : 'Sign in'}
+                </span>
+              </motion.button>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

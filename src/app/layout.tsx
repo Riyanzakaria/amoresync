@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-const nunito = Nunito({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-quicksand",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "AmoreSync",
-  description: "A private space for couples",
+  title: "AmoreSync 💕",
+  description: "A private romantic space for couples — stay in sync, always.",
 };
 
 export default function RootLayout({
@@ -17,10 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${nunito.className} antialiased text-stone-700 dark:text-stone-200 bg-[#faf8f5] dark:bg-[#1a1525] transition-colors duration-300`}>
+      <body
+        className={`${quicksand.variable} font-sans antialiased`}
+        style={{ background: "var(--bg-page)", color: "var(--text-primary)" }}
+      >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange={false}
         >

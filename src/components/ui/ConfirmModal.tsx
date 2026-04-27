@@ -1,7 +1,8 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertCircle } from 'lucide-react'
+
+const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
 
 type ConfirmModalProps = {
   isOpen: boolean
@@ -14,66 +15,114 @@ type ConfirmModalProps = {
   isDangerous?: boolean
 }
 
-export default function ConfirmModal({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  description, 
-  confirmText = 'Confirm', 
+export default function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmText = 'Confirm',
   cancelText = 'Cancel',
-  isDangerous = true 
+  isDangerous = true,
 }: ConfirmModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-stone-900/40 dark:bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0"
+            style={{ background: 'rgba(30,10,40,0.35)', backdropFilter: 'blur(6px)' }}
           />
+
+          {/* Modal Card */}
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, y: 20 }}
+            initial={{ scale: 0.85, opacity: 0, y: 24 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-sm bg-white dark:bg-zinc-800 p-8 rounded-3xl shadow-2xl border border-rose-50 dark:border-zinc-700/50 overflow-hidden"
+            exit={{ scale: 0.85, opacity: 0, y: 24 }}
+            transition={springConfig}
+            className="relative w-full max-w-sm bubbly-card p-8 overflow-hidden"
+            style={{ background: 'linear-gradient(160deg, #ffffff 0%, #fdf4f8 100%)' }}
           >
-            {/* Soft background glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-100/50 dark:bg-rose-900/20 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDangerous ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-500' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500'}`}>
-                <AlertCircle size={32} />
+            {/* Soft glow blob */}
+            <div
+              className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
+              style={{
+                background: isDangerous
+                  ? 'radial-gradient(circle, rgba(255,182,193,0.4), transparent)'
+                  : 'radial-gradient(circle, rgba(200,240,224,0.5), transparent)',
+              }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center text-center gap-4">
+              {/* Icon */}
+              <div
+                className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl"
+                style={{
+                  background: isDangerous
+                    ? 'linear-gradient(135deg, #FFD1DC, #FFE4E6)'
+                    : 'linear-gradient(135deg, #C8F0E0, #D1FAE5)',
+                  boxShadow: isDangerous
+                    ? '0 8px 24px rgba(255,182,193,0.4)'
+                    : '0 8px 24px rgba(200,240,224,0.4)',
+                }}
+              >
+                {isDangerous ? '🗑️' : '✅'}
               </div>
-              <h3 className="text-xl font-extrabold text-stone-800 dark:text-stone-100 mb-2">{title}</h3>
-              {description && (
-                <p className="text-sm font-medium text-stone-500 dark:text-stone-400 mb-8">{description}</p>
-              )}
-              
-              <div className="w-full flex gap-3">
-                <button
+
+              <div>
+                <h3
+                  className="text-xl font-bold mb-1"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {title}
+                </h3>
+                {description && (
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
+                    {description}
+                  </p>
+                )}
+              </div>
+
+              {/* Buttons */}
+              <div className="w-full flex gap-3 mt-2">
+                <motion.button
                   onClick={onClose}
-                  className="flex-1 py-3.5 px-4 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-stone-700 dark:text-stone-300 rounded-2xl font-bold transition-colors text-sm"
+                  whileTap={{ scale: 0.93 }}
+                  transition={springConfig}
+                  className="flex-1 py-3 rounded-full font-bold text-sm transition-all"
+                  style={{
+                    background: 'rgba(255,182,193,0.15)',
+                    color: 'var(--text-muted)',
+                    border: '1.5px solid rgba(255,182,193,0.3)',
+                  }}
                 >
                   {cancelText}
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => {
                     onConfirm()
                     onClose()
                   }}
-                  className={`flex-1 py-3.5 px-4 text-white rounded-2xl font-bold transition-colors text-sm shadow-md ${
-                    isDangerous 
-                      ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200 dark:shadow-none' 
-                      : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200 dark:shadow-none'
-                  }`}
+                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.03 }}
+                  transition={springConfig}
+                  className="flex-1 py-3 rounded-full font-bold text-sm text-white"
+                  style={{
+                    background: isDangerous
+                      ? 'linear-gradient(135deg, #ff8fab, #f43f5e)'
+                      : 'linear-gradient(135deg, #6EE7B7, #34D399)',
+                    boxShadow: isDangerous
+                      ? '0 6px 20px rgba(244,63,94,0.35)'
+                      : '0 6px 20px rgba(52,211,153,0.35)',
+                  }}
                 >
                   {confirmText}
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>

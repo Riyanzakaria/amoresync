@@ -1,55 +1,109 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { createPostIt } from './actions'
+
+const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
+
+const colorOptions = [
+  { value: 'yellow', bg: '#FEF9C3', dot: '#FDE047', label: 'Lemon' },
+  { value: 'pink',   bg: '#FFE4E6', dot: '#FB7185', label: 'Blush' },
+  { value: 'blue',   bg: '#E0F2FE', dot: '#38BDF8', label: 'Sky' },
+  { value: 'green',  bg: '#D1FAE5', dot: '#34D399', label: 'Mint' },
+]
 
 export default function PostItForm() {
   const [loading, setLoading] = useState(false)
+  const [selectedColor, setSelectedColor] = useState('yellow')
   const formRef = useRef<HTMLFormElement>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
-    
     const formData = new FormData(e.currentTarget)
     await createPostIt(formData)
-    
     setLoading(false)
     formRef.current?.reset()
+    setSelectedColor('yellow')
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="bg-white dark:bg-zinc-800/80 p-6 rounded-3xl shadow-xl shadow-rose-100/50 dark:shadow-lg dark:shadow-rose-900/20 border border-rose-50 dark:border-zinc-700/50 transition-colors duration-300">
-      <h3 className="text-lg font-bold mb-4 text-stone-800 dark:text-stone-100">Leave a Post-it</h3>
+    <motion.form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...springConfig, delay: 0.2 }}
+      className="bubbly-card p-6"
+      style={{ background: 'linear-gradient(160deg, #fff 0%, #fdf4f8 100%)' }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div
+          className="w-9 h-9 rounded-2xl flex items-center justify-center text-lg"
+          style={{ background: '#FFE4E6' }}
+        >
+          📌
+        </div>
+        <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+          Leave a sweet note
+        </h3>
+      </div>
+
       <div className="space-y-4">
+        {/* Textarea */}
         <textarea
           name="content"
           required
           maxLength={280}
           rows={3}
-          className="w-full rounded-2xl border border-stone-200 dark:border-zinc-700 bg-[#faf8f5] dark:bg-zinc-900/50 p-4 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-rose-400 dark:focus:ring-rose-500 focus:border-transparent resize-none font-medium text-sm placeholder-stone-400 dark:placeholder-zinc-500 transition-colors"
-          placeholder="Write something sweet..."
+          className="input-bubbly resize-none"
+          placeholder="Write something sweet... 💌"
+          style={{ fontFamily: 'inherit' }}
         />
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex gap-3">
-            {['yellow', 'pink', 'blue', 'green'].map(color => (
-              <label key={color} className="cursor-pointer">
-                <input type="radio" name="color_theme" value={color} className="peer sr-only" defaultChecked={color === 'yellow'} />
-                <div className={`w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-stone-800 dark:peer-checked:border-stone-200 shadow-sm transition-transform hover:scale-110
-                  ${color === 'yellow' ? 'bg-yellow-300 dark:bg-yellow-600/60' : color === 'pink' ? 'bg-pink-300 dark:bg-pink-600/60' : color === 'blue' ? 'bg-sky-300 dark:bg-sky-600/60' : 'bg-emerald-300 dark:bg-emerald-600/60'}`}
+
+        {/* Color picker + Submit */}
+        <div className="flex items-center justify-between gap-3">
+          {/* Color swatches */}
+          <div className="flex gap-2">
+            {colorOptions.map((c) => (
+              <motion.label
+                key={c.value}
+                title={c.label}
+                whileTap={{ scale: 0.85 }}
+                transition={springConfig}
+                className="cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="color_theme"
+                  value={c.value}
+                  className="peer sr-only"
+                  checked={selectedColor === c.value}
+                  onChange={() => setSelectedColor(c.value)}
                 />
-              </label>
+                <div
+                  className="w-8 h-8 rounded-full transition-all peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-rose-400 peer-checked:scale-110"
+                  style={{ background: c.dot }}
+                />
+              </motion.label>
             ))}
           </div>
-          <button
+
+          {/* Submit button */}
+          <motion.button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto px-6 py-2.5 bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-xl font-bold transition-colors disabled:opacity-50 text-sm shadow-md shadow-rose-200/50 dark:shadow-rose-900/50"
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05 }}
+            transition={springConfig}
+            className="btn-bubbly-primary px-6 py-2.5 text-sm flex-shrink-0"
           >
-            {loading ? 'Posting...' : 'Post it'}
-          </button>
+            {loading ? '✨ Posting...' : 'Post it 💕'}
+          </motion.button>
         </div>
       </div>
-    </form>
+    </motion.form>
   )
 }

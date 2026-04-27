@@ -6,38 +6,46 @@ import { createClient } from '@/utils/supabase/client'
 import { feedPet } from './PetActions'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
-// Karena sulit mencari 4 animasi Lottie kucing dengan art style yang sama persis,
-// kita akan menggunakan TEKNIK MANIPULASI (1 Lottie Animasi Idle) + Framer Motion + CSS Filters.
-// Cari 1 saja animasi kucing yang paling bagus (idle/diam) di LottieFiles!
-const LOTTIE_URL = 'https://lottie.host/9082eef0-ed1c-42c4-9c1b-167f0ac3c278/2pe9rPeQTu.lottie' // Ganti URL ini
+// Single beautiful Lottie cat animation — manipulated via CSS + Framer Motion
+const LOTTIE_URL = 'https://lottie.host/9082eef0-ed1c-42c4-9c1b-167f0ac3c278/2pe9rPeQTu.lottie'
 
-export default function VirtualCat({ initialPet, currentUserId }: { initialPet: any, currentUserId: string }) {
+const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
+
+export default function VirtualCat({
+  initialPet,
+  currentUserId,
+}: {
+  initialPet: any
+  currentUserId: string
+}) {
   const [pet, setPet] = useState(initialPet)
   const [isFeeding, setIsFeeding] = useState(false)
   const [foodEmoji, setFoodEmoji] = useState('🐟')
-  const [hearts, setHearts] = useState<{ id: number, x: number }[]>([])
+  const [hearts, setHearts] = useState<{ id: number; x: number }[]>([])
   const [feedback, setFeedback] = useState<string | null>(null)
   const supabase = createClient()
 
-  // Calculate actual happiness immediately based on decay
   const calculateEffectiveHappiness = (dbPet: any) => {
     if (!dbPet) return 50
-    const hoursSinceLastInteract = (new Date().getTime() - new Date(dbPet.last_interacted_at).getTime()) / (1000 * 60 * 60)
-    const decayPoints = Math.floor(hoursSinceLastInteract / 24) * 10
-    return Math.max(0, dbPet.happiness_level - decayPoints)
+    const hoursSince =
+      (Date.now() - new Date(dbPet.last_interacted_at).getTime()) /
+      (1000 * 60 * 60)
+    return Math.max(0, dbPet.happiness_level - Math.floor(hoursSince / 24) * 10)
   }
 
-  const [displayHappiness, setDisplayHappiness] = useState(calculateEffectiveHappiness(initialPet))
+  const [displayHappiness, setDisplayHappiness] = useState(
+    calculateEffectiveHappiness(initialPet)
+  )
 
   useEffect(() => {
     if (!pet) return
     const current = calculateEffectiveHappiness(pet)
     setDisplayHappiness(current)
-    
-    // Heart particles if 100
     if (current === 100) {
       const interval = setInterval(() => {
-        setHearts(prev => [...prev, { id: Date.now(), x: Math.random() * 40 - 20 }].slice(-5))
+        setHearts((prev) =>
+          [...prev, { id: Date.now(), x: Math.random() * 40 - 20 }].slice(-5)
+        )
       }, 1000)
       return () => clearInterval(interval)
     }
@@ -47,18 +55,26 @@ export default function VirtualCat({ initialPet, currentUserId }: { initialPet: 
     if (!pet) return
     const channel = supabase
       .channel('public:virtual_pets')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'virtual_pets', filter: `id=eq.${pet.id}` }, (payload) => {
-        const newData = payload.new
-        
-        // Check if happiness went up significantly (someone fed it)
-        const newHappiness = calculateEffectiveHappiness(newData)
-        if (newHappiness > displayHappiness) {
-           triggerFeedAnimation()
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'virtual_pets',
+          filter: `id=eq.${pet.id}`,
+        },
+        (payload) => {
+          const newData = payload.new
+          if (calculateEffectiveHappiness(newData) > displayHappiness) {
+            triggerFeedAnimation()
+          }
+          setPet(newData)
         }
-        setPet(newData)
-      })
+      )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [pet, supabase, displayHappiness])
 
   const triggerFeedAnimation = () => {
@@ -71,14 +87,17 @@ export default function VirtualCat({ initialPet, currentUserId }: { initialPet: 
     if (displayHappiness >= 100) return
     triggerFeedAnimation()
     const res = await feedPet()
-    
     if (res?.success) {
-      setPet({ ...pet, happiness_level: res.happiness, last_interacted_at: new Date().toISOString() })
+      setPet({
+        ...pet,
+        happiness_level: res.happiness,
+        last_interacted_at: new Date().toISOString(),
+      })
       if (res.message.includes('Total')) {
-        setFeedback('Combo Bonus! +50')
+        setFeedback('✨ Combo +50!')
         setTimeout(() => setFeedback(null), 3000)
       } else {
-        setFeedback('+20')
+        setFeedback('+20 💕')
         setTimeout(() => setFeedback(null), 2000)
       }
     }
@@ -86,54 +105,94 @@ export default function VirtualCat({ initialPet, currentUserId }: { initialPet: 
 
   if (!pet) return null
 
-  // Determine State
   const isSad = displayHappiness < 30
   const isMax = displayHappiness >= 100
 
+  // Bar gradient based on state
+  const barGradient = isSad
+    ? 'linear-gradient(90deg, #b0b0b0 0%, #d0d0d0 100%)'
+    : isMax
+    ? 'linear-gradient(90deg, #ff8fab 0%, #f43f5e 100%)'
+    : 'linear-gradient(90deg, #C8F0E0 0%, #4ade80 100%)'
+
   const catVariants = {
-    idle: {
-      scale: 1,
-      transition: { duration: 2 }
-    },
-    sad: {
-      x: [-2, 2, -2, 2, 0],
-      scale: 0.95,
-      transition: { duration: 0.5, repeat: Infinity } // Shivering effect
-    },
-    feeding: {
-      y: [0, -15, 0, -10, 0],
-      scale: 1.1,
-      transition: { duration: 0.8 } // Bouncing up to eat
-    },
-    happy: {
-      y: [0, -5, 0],
-      scale: [1, 1.05, 1],
-      transition: { duration: 1.5, repeat: Infinity } // Light bouncing/dancing
-    }
+    idle:    { scale: 1, transition: { duration: 2 } },
+    sad:     { x: [-2, 2, -2, 2, 0], scale: 0.95, transition: { duration: 0.5, repeat: Infinity } },
+    feeding: { y: [0, -15, 0, -10, 0], scale: 1.1, transition: { duration: 0.8 } },
+    happy:   { y: [0, -5, 0], scale: [1, 1.05, 1], transition: { duration: 1.5, repeat: Infinity } },
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-800/80 p-6 rounded-3xl shadow-xl shadow-rose-100/50 dark:shadow-lg dark:shadow-rose-900/20 border border-rose-50 dark:border-zinc-700/50 flex flex-col items-center relative overflow-hidden lg:h-full">
-      <h3 className="text-xl font-black text-stone-800 dark:text-stone-100 mb-6 flex items-center gap-2">
-        <span>🐾</span> {pet.pet_name}
-      </h3>
-      
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...springConfig, delay: 0.1 }}
+      className="bubbly-card p-6 flex flex-col items-center relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(160deg, #fff 0%, #fdf0f5 100%)',
+      }}
+    >
+      {/* Decorative soft blob inside card */}
+      <div
+        className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-30 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #FFD1DC, transparent)' }}
+      />
+
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-5 self-start">
+        <div
+          className="w-9 h-9 rounded-2xl flex items-center justify-center text-lg"
+          style={{ background: '#FFD1DC' }}
+        >
+          🐾
+        </div>
+        <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+          {pet.pet_name}
+        </h3>
+      </div>
+
       {/* Happiness Bar */}
-      <div className="w-full max-w-[200px] h-3 bg-stone-100 dark:bg-zinc-900 rounded-full mb-8 relative overflow-visible">
-        <motion.div 
-          className={`h-full rounded-full ${isSad ? 'bg-stone-400' : isMax ? 'bg-rose-500' : 'bg-emerald-400'}`}
-          initial={{ width: `${displayHappiness}%` }}
-          animate={{ width: `${displayHappiness}%` }}
-          transition={{ duration: 0.5 }}
-        />
-        <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-bold text-stone-400">Happiness: {displayHappiness}/100</div>
+      <div className="w-full mb-6">
+        <div className="flex justify-between text-xs font-bold mb-2" style={{ color: 'var(--text-muted)' }}>
+          <span>Happiness</span>
+          <span
+            className="font-bold"
+            style={{ color: isSad ? '#9ca3af' : isMax ? '#f43f5e' : '#4ade80' }}
+          >
+            {displayHappiness}/100
+          </span>
+        </div>
+        <div
+          className="w-full h-3 rounded-full overflow-hidden"
+          style={{ background: 'rgba(255,182,193,0.2)' }}
+        >
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: barGradient }}
+            initial={{ width: `${displayHappiness}%` }}
+            animate={{ width: `${displayHappiness}%` }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          />
+        </div>
+        {/* State emoji badges */}
+        <div className="flex gap-2 mt-2">
+          {isSad && (
+            <span className="badge-pastel bg-stone-100 text-stone-500">😿 Hungry</span>
+          )}
+          {isMax && (
+            <span className="badge-pastel bg-rose-50 text-rose-500">💖 Full & Happy</span>
+          )}
+          {!isSad && !isMax && (
+            <span className="badge-pastel bg-mint text-emerald-700">😸 Content</span>
+          )}
+        </div>
       </div>
 
       {/* The Cat Container */}
-      <div className="relative w-32 h-32 flex items-end justify-center mb-6">
-        {/* Particles */}
+      <div className="relative w-36 h-36 flex items-end justify-center mb-6">
+        {/* Heart particles */}
         <AnimatePresence>
-          {hearts.map(h => (
+          {hearts.map((h) => (
             <motion.div
               key={h.id}
               initial={{ opacity: 1, y: 0, x: h.x, scale: 0.5 }}
@@ -141,74 +200,95 @@ export default function VirtualCat({ initialPet, currentUserId }: { initialPet: 
               exit={{ opacity: 0 }}
               transition={{ duration: 1.5 }}
               className="absolute text-xl pointer-events-none"
-              style={{ zIndex: 0 }}
             >
               💖
             </motion.div>
           ))}
         </AnimatePresence>
 
-        {/* Feeding Icon */}
+        {/* Food icon on feed */}
         <AnimatePresence>
           {isFeeding && (
             <motion.div
-              initial={{ opacity: 0, scale: 0, x: 40, y: 0 }}
+              initial={{ opacity: 0, scale: 0, x: 40 }}
               animate={{ opacity: 1, scale: 1.5, y: -40 }}
               exit={{ opacity: 0, scale: 0, y: -60 }}
-              className="absolute z-10"
+              className="absolute z-10 text-2xl"
             >
               {foodEmoji}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Feedback Text */}
+        {/* Score popup */}
         <AnimatePresence>
           {feedback && (
             <motion.div
-              initial={{ opacity: 0, y: 0 }}
-              animate={{ opacity: 1, y: -30 }}
+              initial={{ opacity: 0, y: 0, scale: 0.8 }}
+              animate={{ opacity: 1, y: -32, scale: 1 }}
               exit={{ opacity: 0, y: -50 }}
-              className="absolute -top-8 text-rose-500 font-extrabold text-sm whitespace-nowrap z-20 bg-white/90 dark:bg-zinc-800/90 px-3 py-1 rounded-full shadow-sm"
+              transition={springConfig}
+              className="absolute -top-4 left-1/2 -translate-x-1/2 text-sm font-extrabold whitespace-nowrap z-20 rounded-full px-3 py-1"
+              style={{
+                background: 'linear-gradient(135deg, #FFD1DC, #f9a8c0)',
+                color: '#c0396b',
+                boxShadow: '0 4px 16px rgba(255,182,193,0.5)',
+              }}
             >
               {feedback}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Cat Lottie Player - Single Source with Manipulations */}
+        {/* The Cat - Lottie + Framer Motion manipulation */}
         <motion.div
           variants={catVariants}
-          animate={isFeeding ? "feeding" : isMax ? "happy" : isSad ? "sad" : "idle"}
-          className={`z-10 cursor-pointer drop-shadow-xl select-none w-full h-full transition-all duration-700 
-            ${isSad && !isFeeding ? 'grayscale brightness-75 sepia-[.3]' : ''} 
-            ${isMax ? 'saturate-150 brightness-110 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]' : ''}`}
+          animate={
+            isFeeding ? 'feeding' : isMax ? 'happy' : isSad ? 'sad' : 'idle'
+          }
           onClick={handleFeed}
-          title={isSad ? "I'm hungry..." : "Purrrr..."}
+          whileTap={{ scale: 0.9 }}
+          transition={springConfig}
+          className={`z-10 cursor-pointer select-none w-full h-full
+            ${isSad && !isFeeding ? 'grayscale brightness-75 sepia-[.3]' : ''}
+            ${isMax ? 'saturate-150 brightness-110' : ''}
+          `}
+          style={
+            isMax
+              ? { filter: 'drop-shadow(0 0 18px rgba(244,63,94,0.4))' }
+              : undefined
+          }
+          title={isSad ? "I'm hungry..." : 'Purrrr...'}
         >
-          <DotLottieReact
-            src={LOTTIE_URL}
-            loop={true}
-            autoplay
-          />
+          <DotLottieReact src={LOTTIE_URL} loop autoplay />
         </motion.div>
       </div>
 
-      <button 
+      {/* Feed Button */}
+      <motion.button
         onClick={handleFeed}
         disabled={isMax}
-        className="px-8 py-3 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl font-bold text-sm hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all shadow-sm disabled:opacity-50 border border-rose-200 dark:border-rose-900 active:scale-95 uppercase tracking-widest"
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.05 }}
+        transition={springConfig}
+        className="btn-bubbly-primary w-full max-w-[200px] text-sm"
       >
-        {isMax ? 'Full & Happy!' : 'Feed Mochi'}
-      </button>
+        {isMax ? '🌟 Full & Happy!' : '🐟 Feed Mochi'}
+      </motion.button>
 
-      {/* Double Feed Hint */}
-      <div className="mt-6 pt-4 border-t border-stone-100 dark:border-zinc-700 w-full">
-        <p className="text-xs text-stone-400 dark:text-stone-500 text-center leading-relaxed font-medium">
-          Feed together on the same day for a <strong className="text-rose-400">+50 Combo Bonus!</strong><br/>
-          Gains passive happiness when you leave notes or save money.
-        </p>
+      {/* Combo hint */}
+      <div
+        className="mt-5 pt-4 w-full text-center text-xs font-semibold leading-relaxed"
+        style={{
+          borderTop: '1px dashed rgba(255,182,193,0.4)',
+          color: 'var(--text-muted)',
+        }}
+      >
+        Feed together on the same day for a{' '}
+        <strong style={{ color: '#f43f5e' }}>+50 Combo Bonus!</strong>
+        <br />
+        Gains passive happiness when you leave notes. 🌸
       </div>
-    </div>
+    </motion.div>
   )
 }

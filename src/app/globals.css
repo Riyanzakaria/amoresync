@@ -1,3 +1,143 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Google Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* ─── CSS Custom Properties ─────────────────────────────────── */
+:root {
+  --bg-page:     #FAF8F5;
+  --bg-card:     #FFFFFF;
+  --text-primary: #3D2A38;
+  --text-muted:  #9B8898;
+  --border-soft: rgba(255, 182, 193, 0.3);
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.05);
+  --radius-card: 2.5rem;
+  --radius-btn:  9999px;
+}
+
+.dark {
+  --bg-page:     #1E1625;
+  --bg-card:     #2A1F35;
+  --text-primary: #F5EEF8;
+  --text-muted:  #8B7A93;
+  --border-soft: rgba(200, 150, 200, 0.2);
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+/* ─── Base Styles ───────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Quicksand', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── Bubbly Utility Classes ────────────────────────────────── */
+@layer components {
+
+  /* Cards */
+  .bubbly-card {
+    @apply bg-white dark:bg-[#2A1F35] rounded-[2.5rem]
+           border border-[rgba(255,182,193,0.3)] dark:border-[rgba(200,150,200,0.2)]
+           transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .bubbly-card-gradient {
+    background: linear-gradient(160deg, #ffffff 0%, #fdf4f8 100%);
+  }
+  .dark .bubbly-card-gradient {
+    background: linear-gradient(160deg, #2A1F35 0%, #231A2E 100%);
+  }
+
+  /* Buttons */
+  .btn-bubbly-primary {
+    @apply px-6 py-3 rounded-full font-bold text-white
+           transition-all duration-200 active:scale-95
+           shadow-[0_8px_24px_rgba(244,63,94,0.35)]
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #ff8fab 0%, #f43f5e 100%);
+  }
+  .btn-bubbly-primary:hover:not(:disabled) {
+    box-shadow: 0 12px 32px rgba(244, 63, 94, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .btn-bubbly-soft {
+    @apply px-5 py-2.5 rounded-full font-bold
+           bg-blush dark:bg-rose-900/40 text-rose-600 dark:text-rose-300
+           border border-blush-dark/30 dark:border-rose-800/40
+           transition-all duration-200 active:scale-95
+           hover:bg-blush-dark dark:hover:bg-rose-900/60;
+  }
+
+  .btn-bubbly-ghost {
+    @apply px-5 py-2.5 rounded-full font-semibold
+           text-[var(--text-muted)] hover:text-[var(--text-primary)]
+           hover:bg-[rgba(255,182,193,0.15)]
+           transition-all duration-200 active:scale-95;
+  }
+
+  /* Input fields */
+  .input-bubbly {
+    @apply w-full rounded-3xl px-5 py-3.5 font-semibold text-sm
+           bg-[#FAF8F5] dark:bg-[#1E1625]
+           border border-[rgba(255,182,193,0.4)] dark:border-[rgba(200,150,200,0.25)]
+           text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+           focus:outline-none focus:ring-2 focus:ring-rose-300 dark:focus:ring-rose-600
+           focus:border-transparent transition-all duration-200;
+  }
+
+  /* Nav item active pill */
+  .nav-pill-active {
+    @apply bg-blush dark:bg-rose-900/50 text-rose-600 dark:text-rose-300
+           rounded-full;
+  }
+
+  /* Pastel badge */
+  .badge-pastel {
+    @apply px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  /* Section headings */
+  .section-heading {
+    @apply text-xl font-bold text-[var(--text-primary)] flex items-center gap-2;
+  }
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 182, 193, 0.4);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(244, 63, 94, 0.4); }
+
+/* ─── Selection ──────────────────────────────────────────────── */
+::selection { background: #FFD1DC; color: #3D2A38; }
+
+/* ─── Floating blobs (decorative background) ─────────────────── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+.blob-rose    { background: #FFD1DC; }
+.blob-lavender{ background: #E8D5F5; }
+.blob-mint    { background: #C8F0E0; }

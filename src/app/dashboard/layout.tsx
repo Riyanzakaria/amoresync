@@ -22,47 +22,74 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
-  let partnerName = 'Unknown'
+  let partnerName = 'your partner'
   if (profile?.partner_id) {
     const { data: partner } = await supabase
       .from('profiles')
       .select('display_name')
       .eq('id', profile.partner_id)
       .single()
-    if (partner) partnerName = partner.display_name || 'Unknown'
+    if (partner) partnerName = partner.display_name || 'your partner'
   }
 
+  const displayName = profile?.display_name || user.email?.split('@')[0] || 'you'
+
   return (
-    <div className="min-h-screen bg-[#faf8f5] dark:bg-[#1a1525] p-4 sm:p-8 pb-24 lg:pb-8 selection:bg-rose-200 transition-colors duration-300 relative">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Global Header */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-zinc-800/80 p-6 rounded-3xl shadow-xl shadow-rose-100/50 dark:shadow-lg dark:shadow-rose-900/20 border border-rose-50 dark:border-zinc-700/50 backdrop-blur-md">
-          <div className="mb-4 sm:mb-0">
-            <h1 className="text-3xl font-extrabold text-stone-800 dark:text-stone-100 flex items-center gap-2">
-              <span>AmoreSync</span>
-              <span className="text-rose-400 animate-[pulse_3s_ease-in-out_infinite]">❤️</span>
-            </h1>
-            <div className="text-stone-500 dark:text-stone-400 mt-2 font-medium flex items-center gap-2">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="You" className="w-6 h-6 rounded-full object-cover shadow-sm border border-rose-100 dark:border-zinc-700" />
-              ) : (
-                <span className="w-6 h-6 rounded-full bg-stone-200 dark:bg-zinc-700 flex items-center justify-center text-[10px]">👤</span>
-              )}
-              <span>You are paired with <span className="font-bold text-rose-500 dark:text-rose-400">{partnerName}</span></span>
+    <div className="min-h-screen relative overflow-x-hidden" style={{ background: 'var(--bg-page)' }}>
+      {/* Decorative floating blobs */}
+      <div className="blob blob-rose w-80 h-80 -top-20 -left-20 animate-float" />
+      <div className="blob blob-lavender w-96 h-96 top-1/3 -right-32" style={{ animationDelay: '1.5s' }} />
+      <div className="blob blob-mint w-64 h-64 bottom-1/4 left-1/4 animate-float" style={{ animationDelay: '0.8s' }} />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-28 lg:pb-10 space-y-6">
+
+        {/* ── Global Header ──────────────────────────────────────── */}
+        <header className="bubbly-card bubbly-card-gradient px-6 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          {/* Left: Branding + greeting */}
+          <div className="flex items-center gap-4">
+            {/* Cute couple illustration blob */}
+            <div
+              className="w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-2xl select-none flex-shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, #FFD1DC 0%, #E8D5F5 100%)',
+                boxShadow: '0 6px 20px rgba(255,182,193,0.4)',
+              }}
+            >
+              👩‍❤️‍👨
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1
+                  className="text-2xl sm:text-3xl font-bold tracking-tight"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  AmoreSync
+                </h1>
+                <span className="text-xl animate-pulse-soft">💕</span>
+              </div>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                Hi, <span style={{ color: '#f43f5e' }}>{displayName}</span> ✨ &nbsp;·&nbsp; Paired with{' '}
+                <span className="font-bold" style={{ color: '#c9a7e8' }}>{partnerName}</span>
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
             <ThemeToggle />
             <form action={signout}>
-              <button type="submit" className="px-5 py-2.5 bg-rose-50 dark:bg-zinc-900/50 text-rose-700 dark:text-rose-300 rounded-2xl hover:bg-rose-100 dark:hover:bg-zinc-900 transition-colors font-bold text-sm shadow-sm border border-rose-100 dark:border-zinc-800">
+              <button
+                type="submit"
+                className="btn-bubbly-soft text-sm"
+              >
                 Sign out
               </button>
             </form>
           </div>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* ── Main Body ──────────────────────────────────────────── */}
+        <div className="flex flex-col lg:flex-row gap-6">
           <DashboardNav />
           <main className="flex-1 min-w-0">
             {children}

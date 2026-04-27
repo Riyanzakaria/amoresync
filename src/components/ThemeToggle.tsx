@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
+
+const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -11,20 +13,33 @@ export function ThemeToggle() {
   React.useEffect(() => setMounted(true), [])
 
   if (!mounted) {
-    return <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-zinc-800 animate-pulse border border-transparent"></div>
+    return (
+      <div
+        className="w-11 h-11 rounded-full animate-pulse"
+        style={{ background: 'rgba(255,182,193,0.2)' }}
+      />
+    )
   }
 
+  const isDark = theme === 'dark'
+
   return (
-    <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2.5 rounded-full bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 transition-colors shadow-sm text-stone-600 dark:text-stone-300 border border-rose-100 dark:border-zinc-700 backdrop-blur-sm"
+    <motion.button
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      whileTap={{ scale: 0.88 }}
+      whileHover={{ scale: 1.08 }}
+      transition={springConfig}
       aria-label="Toggle theme"
+      className="w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all"
+      style={{
+        background: isDark
+          ? 'linear-gradient(135deg, #312148, #1E1625)'
+          : 'linear-gradient(135deg, #FFD1DC, #FFF0F3)',
+        boxShadow: '0 4px 16px rgba(255,182,193,0.35)',
+        border: '1.5px solid rgba(255,182,193,0.4)',
+      }}
     >
-      {theme === 'dark' ? (
-        <Moon className="h-5 w-5 text-indigo-300 drop-shadow-sm" />
-      ) : (
-        <Sun className="h-5 w-5 text-amber-400 drop-shadow-sm" />
-      )}
-    </button>
+      <span className="select-none">{isDark ? '🌙' : '☀️'}</span>
+    </motion.button>
   )
 }
