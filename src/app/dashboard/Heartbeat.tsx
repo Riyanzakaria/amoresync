@@ -73,6 +73,14 @@ export default function Heartbeat({
       event: 'heartbeat_sent',
       payload: { sender_id: currentUserId },
     })
+
+    // Fire-and-forget push notification (for when partner is offline)
+    fetch('/api/push/heartbeat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ partnerId }),
+    }).catch(() => {})
+
     setTimeout(() => setCooldown(false), 3000)
   }
 

@@ -117,6 +117,23 @@ export default function TheSpinner({ initialOptions, currentUserId, partnerId }:
     setTimeout(() => {
       setIsSpinning(false)
       setWinner(winnerContent)
+
+      // Fire-and-forget push to partner
+      if (partnerId && winnerContent) {
+        fetch('/api/push/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            partnerId,
+            override: {
+              title: '🎡 Spinner baru diputar!',
+              body: `Hasilnya: "${winnerContent}" — yuk lihat! 🎯`,
+              url: '/dashboard/play',
+              tag: 'spinner',
+            },
+          }),
+        }).catch(() => {})
+      }
     }, 5000)
   }
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { signout } from '@/app/auth/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import DashboardNav from './DashboardNav'
+import PushNotificationManager from '@/components/PushNotificationManager'
 
 export default async function DashboardLayout({
   children,
@@ -96,6 +97,9 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
+
+      {/* Push Notification Manager — client-only */}
+      <PushNotificationManager />
     </div>
   )
 }

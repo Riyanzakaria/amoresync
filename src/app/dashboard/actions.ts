@@ -2,11 +2,30 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { feedPet } from './PetActions'
+import { sendPushToUser } from '@/lib/webpush'
+
+/** Get current user's partner_id and display_name in one query */
+async function getPartnerContext() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('partner_id, display_name')
+    .eq('id', user.id)
+    .single()
+
+  return {
+    userId: user.id,
+    partnerId: profile?.partner_id ?? null,
+    myName: profile?.display_name || 'Pasanganmu',
+  }
+}
 
 export async function createPostIt(formData: FormData) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return { error: 'Not authenticated' }
 
   const content = formData.get('content') as string
@@ -18,18 +37,24 @@ export async function createPostIt(formData: FormData) {
 
   const { error } = await supabase
     .from('post_its')
-    .insert({
-      creator_id: user.id,
-      content,
-      color_theme
-    })
+    .insert({ creator_id: user.id, content, color_theme })
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
-  // Passive Trigger: Give pet some happiness on interaction
+  // Passive: pet happiness
   await feedPet()
+
+  // Push notification to partner
+  const ctx = await getPartnerContext()
+  if (ctx?.partnerId) {
+    const preview = content.length > 60 ? content.slice(0, 57) + '…' : content
+    sendPushToUser(ctx.partnerId, {
+      title: `📝 Pesan baru dari ${ctx.myName}!`,
+      body: preview,
+      url: '/dashboard',
+      tag: 'post-it',
+    }).catch(() => {})
+  }
 
   return { success: true }
 }
