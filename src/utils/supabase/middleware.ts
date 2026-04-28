@@ -49,7 +49,7 @@ export async function updateSession(request: NextRequest) {
       .from('profiles')
       .select('partner_id')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { partner_id: string | null } | null, error: unknown }
 
     const hasPartner = !!profile?.partner_id
 

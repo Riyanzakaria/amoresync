@@ -18,7 +18,7 @@ export default function WishlistBoard({ wishlists }: { wishlists: WishlistWithBa
   if (!wishlists || wishlists.length === 0) {
     return (
       <div className="bg-white dark:bg-zinc-800/80 p-6 rounded-3xl shadow-xl shadow-rose-100/50 dark:shadow-lg dark:shadow-rose-900/20 border border-rose-50 dark:border-zinc-700/50 text-center transition-colors duration-300">
-        <p className="text-stone-500 dark:text-stone-400 font-medium">You both haven't set a wishlist goal yet.</p>
+        <p className="text-stone-500 dark:text-stone-400 font-medium">You both haven&apos;t set a wishlist goal yet.</p>
       </div>
     )
   }

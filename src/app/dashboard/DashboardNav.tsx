@@ -12,7 +12,7 @@ const navItems = [
   { name: 'Profile', href: '/dashboard/profile', icon: User,     emoji: '🌸', color: '#FFE4B5' },
 ]
 
-const springTransition = { type: 'spring', stiffness: 300, damping: 20 }
+const springTransition = { type: 'spring', stiffness: 300, damping: 20 } as const
 
 export default function DashboardNav() {
   const pathname = usePathname()

@@ -80,10 +80,10 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      [key in never]: never
     }
     Functions: {
-      [_ in never]: never
+      [key in never]: never
     }
     Enums: {
       wishlist_category: WishlistCategory

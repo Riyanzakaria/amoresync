@@ -24,7 +24,7 @@ export default function PairingForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label htmlFor="partner_code" className="sr-only">Partner's Code</label>
+        <label htmlFor="partner_code" className="sr-only">Partner&apos;s Code</label>
         <input
           id="partner_code"
           name="partner_code"

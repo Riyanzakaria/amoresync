@@ -1,0 +1,15 @@
+// AmoreSync Service Worker — powered by Serwist v9
+import { defaultCache } from '@serwist/next/worker'
+import { Serwist } from 'serwist'
+
+declare const self: ServiceWorkerGlobalScope
+
+const serwist = new Serwist({
+  precacheEntries: self.__SW_MANIFEST,
+  skipWaiting: true,
+  clientsClaim: true,
+  navigationPreload: false,
+  runtimeCaching: defaultCache,
+})
+
+serwist.addEventListeners()

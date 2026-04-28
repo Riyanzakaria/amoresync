@@ -8,10 +8,10 @@ import { useRouter } from 'next/navigation'
 
 const MOODS = ['😊', '😂', '🥺', '😡', '😴', '🥰', '😭', '🤯', '🤧', '🤢', '😎', '🤒']
 
-export default function ProfileEditor({ initialProfile }: { initialProfile: any }) {
-  const [displayName, setDisplayName] = useState(initialProfile?.display_name || '')
-  const [avatarUrl, setAvatarUrl] = useState(initialProfile?.avatar_url || '')
-  const [mood, setMood] = useState(initialProfile?.current_mood || '😊')
+export default function ProfileEditor({ initialProfile }: { initialProfile: Record<string, unknown> | null }) {
+  const [displayName, setDisplayName] = useState((initialProfile?.display_name as string) || '')
+  const [avatarUrl, setAvatarUrl] = useState((initialProfile?.avatar_url as string) || '')
+  const [mood, setMood] = useState((initialProfile?.current_mood as string) || '😊')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -70,6 +70,10 @@ export default function ProfileEditor({ initialProfile }: { initialProfile: any 
     try {
       setLoading(true)
       setError(null)
+
+      if (!initialProfile?.id) {
+        throw new Error('Profile tidak ditemukan. Coba refresh halaman 🔄')
+      }
       
       // 1. Compress image client-side
       const compressedBlob = await compressImage(file)
@@ -95,9 +99,9 @@ export default function ProfileEditor({ initialProfile }: { initialProfile: any 
       formData.append('avatar_url', publicUrl)
       await updateProfile(formData)
 
-    } catch (err: any) {
-      console.error(err)
-      setError(err.message || 'Failed to upload avatar')
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Gagal upload foto. Coba lagi ya 💕'
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }

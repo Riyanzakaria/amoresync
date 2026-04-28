@@ -31,7 +31,7 @@ export default async function DashboardHome() {
 
         {/* ── Left Column: Pet + Note Form ──────────────────────── */}
         <div className="lg:col-span-4 space-y-5">
-          <VirtualCat initialPet={pet} currentUserId={user.id} />
+          <VirtualCat initialPet={pet} />
           <PostItForm />
         </div>
 

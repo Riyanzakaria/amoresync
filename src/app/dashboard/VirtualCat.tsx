@@ -11,12 +11,17 @@ const LOTTIE_URL = 'https://lottie.host/9082eef0-ed1c-42c4-9c1b-167f0ac3c278/2pe
 
 const springConfig = { type: 'spring', stiffness: 300, damping: 20 } as const
 
+type PetRecord = Record<string, unknown> & {
+  id: string
+  pet_name: string
+  happiness_level: number
+  last_interacted_at: string
+}
+
 export default function VirtualCat({
   initialPet,
-  currentUserId,
 }: {
-  initialPet: any
-  currentUserId: string
+  initialPet: PetRecord | null
 }) {
   const [pet, setPet] = useState(initialPet)
   const [isFeeding, setIsFeeding] = useState(false)
@@ -25,7 +30,7 @@ export default function VirtualCat({
   const [feedback, setFeedback] = useState<string | null>(null)
   const supabase = createClient()
 
-  const calculateEffectiveHappiness = (dbPet: any) => {
+  const calculateEffectiveHappiness = (dbPet: PetRecord | null) => {
     if (!dbPet) return 50
     const hoursSince =
       (Date.now() - new Date(dbPet.last_interacted_at).getTime()) /
@@ -64,7 +69,7 @@ export default function VirtualCat({
           filter: `id=eq.${pet.id}`,
         },
         (payload) => {
-          const newData = payload.new
+          const newData = payload.new as PetRecord
           if (calculateEffectiveHappiness(newData) > displayHappiness) {
             triggerFeedAnimation()
           }
@@ -92,7 +97,7 @@ export default function VirtualCat({
         ...pet,
         happiness_level: res.happiness,
         last_interacted_at: new Date().toISOString(),
-      })
+      } as PetRecord)
       if (res.message.includes('Total')) {
         setFeedback('✨ Combo +50!')
         setTimeout(() => setFeedback(null), 3000)

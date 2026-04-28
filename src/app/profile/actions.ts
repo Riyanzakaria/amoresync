@@ -12,7 +12,7 @@ export async function updateProfile(formData: FormData) {
   const avatar_url = formData.get('avatar_url') as string
   const current_mood = formData.get('current_mood') as string
 
-  const updates: any = {}
+  const updates: Partial<{ display_name: string; avatar_url: string; current_mood: string }> = {}
   if (display_name !== null) updates.display_name = display_name
   if (avatar_url !== null) updates.avatar_url = avatar_url
   if (current_mood !== null) updates.current_mood = current_mood

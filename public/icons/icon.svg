@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD1DC"/>
+      <stop offset="50%" stop-color="#E8D5F5"/>
+      <stop offset="100%" stop-color="#C8F0E0"/>
+    </linearGradient>
+    <linearGradient id="heart1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8fab"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+    <linearGradient id="heart2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d8b4fe"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+
+  <!-- Soft overlay -->
+  <rect width="512" height="512" rx="110" fill="white" opacity="0.15"/>
+
+  <!-- Left heart (rose) -->
+  <g filter="url(#glow)" transform="translate(120, 145)">
+    <path d="M110 40
+      C110 18 93 0 70 0
+      C47 0 30 18 30 40
+      C30 18 13 0 -10 0
+      C-33 0 -50 18 -50 40
+      C-50 72 30 145 30 145
+      C30 145 110 72 110 40Z"
+      fill="url(#heart1)" opacity="0.95"/>
+  </g>
+
+  <!-- Right heart (lavender) -->
+  <g filter="url(#glow)" transform="translate(255, 145)">
+    <path d="M110 40
+      C110 18 93 0 70 0
+      C47 0 30 18 30 40
+      C30 18 13 0 -10 0
+      C-33 0 -50 18 -50 40
+      C-50 72 30 145 30 145
+      C30 145 110 72 110 40Z"
+      fill="url(#heart2)" opacity="0.9"/>
+  </g>
+</svg>
